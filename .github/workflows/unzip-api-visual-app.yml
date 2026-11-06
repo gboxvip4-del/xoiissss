@@ -1,0 +1,41 @@
+name: Unzip API Visual App
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract ZIP file safely
+        run: |
+          ZIP_FILE="GBOXIOSVIP-api-visual-app.zip"
+          if [ -f "$ZIP_FILE" ]; then
+            echo "A extrair $ZIP_FILE..."
+            unzip -o "$ZIP_FILE" -d ./
+            rm -f "$ZIP_FILE"
+          else
+            echo "Ficheiro exato não encontrado, a procurar qualquer .zip na raiz..."
+            ZIP_FILE=$(find . -maxdepth 1 -name "*.zip" | head -n 1)
+            if [ -n "$ZIP_FILE" ]; then
+              echo "A extrair $ZIP_FILE..."
+              unzip -o "$ZIP_FILE" -d ./
+              rm -f "$ZIP_FILE"
+            else
+              echo "Erro: Nenhum ficheiro ZIP encontrado na raiz!"
+              exit 1
+            fi
+          fi
+
+      - name: Commit extracted files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-extrair GBOXIOSVIP-api-visual-app.zip na raiz"
+          branch: ${{ github.ref_name }}
+          skip_ci: true
